@@ -1,0 +1,12 @@
+{
+  "appId": "app.lumacare.companion",
+  "appName": "LumaCare",
+  "webDir": "dist",
+  "backgroundColor": "#F5F4EE",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
+}
