@@ -14,12 +14,28 @@ npm install
 npm run ios:sync
 
 echo ""
+if ! grep -R -q "What's the weather like?" ios/App/App/public; then
+  echo "The new Today screen is not in ios/App/App/public. Leave Xcode closed and run this again."
+  exit 1
+fi
+if grep -R -q "Name the weather, then move" ios/App/App/public; then
+  echo "ios/App/App/public still contains the old Today screen. Leave Xcode closed and run this again."
+  exit 1
+fi
+if ! grep -q 'DisableDeploy' ios/App/App/config.xml; then
+  echo "The iPhone project is missing DisableDeploy, so it can reopen the saved page."
+  exit 1
+fi
+
 echo "This build is $(git rev-parse --short HEAD)."
 echo "Opening ios/App/App.xcodeproj"
-echo "1. Select the App target → Signing & Capabilities → Team."
-echo "2. At the top of Xcode, choose your iPhone, not a simulator, if the phone is what you want to update."
-echo "3. Press Run. The phone should flash the words Small steps. and then restart LumaCare."
-echo "If the old logo splash appears instead, Xcode is building a different copy of the project."
+echo "1. Quit any Xcode window that is not this project."
+echo "2. At the top of Xcode, choose your iPhone, not a simulator."
+echo "3. Product → Clean Build Folder, then press Run."
+echo "4. In the Xcode console, these two lines mean the phone is running this build:"
+echo "   LumaCare build 5 starting"
+echo "   LumaCare build 5 web: new"
 echo "Today then shows one mood row. Energy and Stress are not on that first screen."
+echo "If those two lines are missing, delete LumaCare from the iPhone and press Run again."
 echo "The shared scheme already points at App/LumaCare.storekit for local StoreKit testing."
 open ios/App/App.xcodeproj

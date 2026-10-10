@@ -66,9 +66,9 @@ Then in Xcode:
 
 The first launch on a personal device signed with a free Apple ID may need Settings → General → VPN & Device Management → trust your developer certificate.
 
-`ios:mac` pulls this branch, rebuilds the screen, and opens Xcode. Each Run copies those files into the app and clears the phone’s saved copy of the previous screen before it appears. Check-ins and habits stay on the device.
+`ios:mac` pulls this branch, rebuilds the screen, and opens Xcode. Each Run copies those files into the app and opens a new page the previous install cannot keep on screen.
 
-At the top of Xcode, choose your iPhone, then press Run. The phone should flash the words “Small steps.” before LumaCare opens. Today then shows a single mood row. Each Run copies that screen into the app, instead of leaving the previous one in place.
+At the top of Xcode, choose your iPhone, then press Run. The Xcode console must contain `LumaCare build 5 starting` and `LumaCare build 5 web: new`. Today then shows a single mood row. If those lines are missing, delete LumaCare from the iPhone and press Run again. This build uses a new on-device address, so the previous install’s saved check-ins do not carry over.
 
 ### What you can test before App Store Connect exists
 

@@ -4,7 +4,7 @@
   "webDir": "dist",
   "backgroundColor": "#F5F4EE",
   "server": {
-    "hostname": "lumacare-build-4.local",
+    "hostname": "lumacare-build-5.local",
     "iosScheme": "capacitor",
     "androidScheme": "https"
   },
@@ -16,6 +16,11 @@
     "backgroundColor": "#F5F4EE",
     "preferredContentMode": "mobile",
     "allowsLinkPreview": false
+  },
+  "cordova": {
+    "preferences": {
+      "DisableDeploy": "true"
+    }
   },
   "plugins": {
     "SplashScreen": {
