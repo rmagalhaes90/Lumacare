@@ -4,7 +4,7 @@ import { suggestBreakdown } from "../src/lib/breakdown.js";
 import { phaseAt } from "../src/lib/breathe.js";
 import { canAddHabit, canUseBreath, canUseTheme, FREE_HABIT_LIMIT } from "../src/lib/gating.js";
 import { buildInsights, decorateInsights } from "../src/lib/insights.js";
-import { nextStarters, readCheckin } from "../src/lib/habits.js";
+import { affirmation, nextStarters, readCheckin } from "../src/lib/habits.js";
 import { suggestNext } from "../src/lib/suggest.js";
 import { dayKey, normalizeState } from "../src/lib/storage.js";
 
@@ -86,6 +86,8 @@ test("normalize keeps partial saves usable", () => {
 test("a check-in reading stays gentle and starters respect the free limit", () => {
   assert.match(readCheckin({ mood: 2, energy: 1, stress: 2 }), /minimum/i);
   assert.match(readCheckin({ mood: 3, energy: 3, stress: 5 }), /breath/i);
+  assert.match(affirmation({ name: "Ada", mood: 2 }), /welcome/i);
+  assert.match(affirmation({ mood: 3, feeling: "Steady" }), /Steady/);
   const adding = nextStarters([{ name: "Water" }], ["Daylight", "Water", "Phone down"], 1);
   assert.deepEqual(adding.map((item) => item.name), ["Daylight"]);
 });

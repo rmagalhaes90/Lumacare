@@ -108,8 +108,17 @@ export function nextStarters(habits, names, room) {
 
 export function readCheckin({ mood, energy, stress, activities = [] }) {
   if (stress >= 4) return "Stress is the loudest signal. A short breath is a reasonable first move.";
-  if (energy <= 2) return "Energy is low. The minimum version of a habit is the whole assignment.";
+  if (energy != null && energy <= 2) return "Energy is low. The minimum version of a habit is the whole assignment.";
   if (activities.includes("outside")) return "You already got outside. That can be enough of a win for today.";
   if (mood >= 4 && energy >= 4) return "There is some room today. One real focus block will fit.";
-  return "Noted. You do not have to optimize the rest of the day.";
+  if (mood == null) return "You can stop here. Coming back later still counts.";
+  return "Noted. Nothing else is required.";
+}
+
+export function affirmation({ name, mood, feeling }) {
+  const who = name ? `${name}, ` : "";
+  if (feeling) return `${who}“${feeling}” is a true enough word. You do not have to fix it.`;
+  if (mood != null && mood <= 2) return `${who}heavy days are allowed here. You are still welcome.`;
+  if (mood != null && mood >= 4) return `${who}there is some light today. Use as much or as little as you want.`;
+  return `${who}you named it. That is a steady place to stand.`;
 }

@@ -6,7 +6,7 @@ A private, local-first self-care and anti-procrastination companion. No account,
 
 ## What's inside
 
-Today dashboard with mood, energy, stress, a closer feeling word, and day tags, plus adaptive suggestions · task management with a break-it-down assistant, resistance check, two-minute launch, and brain dump · focus timer with distraction capture · habits grouped into morning, day, and evening, each with a minimum version, a cue, a reason, and a quiet week of dots (no streak shaming) · a ready-made calmer-day routine · animated breathing exercises · private journal with prompts · deterministic local insights, including how tags travel with mood · six themes · calm screen transitions, with reduced motion · JSON backup and restore-by-export.
+Today opens one question at a time (mood, then an optional closer word, energy, stress, and day tags), then a short affirmation and either a prompt to create a three-step routine or the next minimum from the routine you already have · task management with a break-it-down assistant, resistance check, two-minute launch, and brain dump · focus timer with distraction capture · habits grouped into morning, day, and evening, each with a minimum version, a cue, a reason, and a quiet week of dots (no streak shaming) · a ready-made calmer-day routine · animated breathing exercises · private journal with prompts · deterministic local insights, including how tags travel with mood · six themes · calm screen transitions, with reduced motion · JSON backup and restore-by-export.
 
 ## Requirements
 

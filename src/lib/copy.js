@@ -18,11 +18,17 @@ export const COPY = {
     motivational: "Start here",
     minimal: "Next",
   },
+  welcome: {
+    gentle: "You made it to today. Nothing is late.",
+    direct: "You're here.",
+    motivational: "Showing up is already the win.",
+    minimal: "Here.",
+  },
   checkinPrompt: {
     gentle: "How are you arriving?",
-    direct: "Check in.",
-    motivational: "Name the weather, then move.",
-    minimal: "Check in",
+    direct: "How is today so far?",
+    motivational: "What's the weather like?",
+    minimal: "Mood",
   },
   checkinSaved: {
     gentle: "Saved. That's enough for this part.",
