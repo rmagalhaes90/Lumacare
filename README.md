@@ -66,9 +66,9 @@ Then in Xcode:
 
 The first launch on a personal device signed with a free Apple ID may need Settings → General → VPN & Device Management → trust your developer certificate.
 
-After you change web code, run `npm run ios:sync` before the next Xcode build. Native shells do not rebuild the web app on their own.
+`ios:mac` pulls this branch, rebuilds the screen, and opens Xcode. Each Run copies those files into the app and clears the phone’s saved copy of the previous screen before it appears. Check-ins and habits stay on the device.
 
-The iPhone app keeps the last screen in an offline cache. This build clears that cache on launch, so a new check-in can replace “Name the weather, then move.” Pull this branch, run `npm run ios:sync`, then press Run in Xcode. If that sentence is still there, delete LumaCare from the simulator or phone and press Run again.
+At the top of Xcode, choose your iPhone, then press Run. Today should ask “What's the weather like?” and show only the mood choices.
 
 ### What you can test before App Store Connect exists
 

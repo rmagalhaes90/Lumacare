@@ -8,14 +8,17 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 1
 fi
 
+branch="$(git rev-parse --abbrev-ref HEAD)"
+git pull --ff-only origin "$branch"
 npm install
 npm run ios:sync
 
 echo ""
+echo "This build is $(git rev-parse --short HEAD)."
 echo "Opening ios/App/App.xcodeproj"
 echo "1. Select the App target → Signing & Capabilities → Team."
-echo "2. Pick an iPhone simulator or a connected iPhone."
-echo "3. Press Run. Opening the project does not install the new screen by itself."
-echo "If Today still says “Name the weather, then move,” delete LumaCare from the simulator or phone and press Run again."
+echo "2. At the top of Xcode, choose your iPhone, not a simulator, if the phone is what you want to update."
+echo "3. Press Run. The play button installs this build on that device."
+echo "Today should ask “What's the weather like?” with only the mood choices."
 echo "The shared scheme already points at App/LumaCare.storekit for local StoreKit testing."
 open ios/App/App.xcodeproj
