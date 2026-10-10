@@ -24,6 +24,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.backgroundColor = UIColor(red: 0.961, green: 0.957, blue: 0.933, alpha: 1)
         window?.makeKeyAndVisible()
 
+        SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
+
+        let revision = bundledWebRevision()
+        NSLog("LumaCare build 4 web: %@", revision)
+        if revision != "new" {
+            showStaleWeb(revision)
+            return
+        }
+
         // Drop the saved page before the new files load.
         let stale: Set<String> = [
             WKWebsiteDataTypeDiskCache,
@@ -36,14 +45,57 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             DispatchQueue.main.async { self.showApp() }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { self.showApp() }
-
-        SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
     }
 
     private func showApp() {
         guard !didShowApp else { return }
         didShowApp = true
         window?.rootViewController = LumaBridgeViewController()
+    }
+
+    private func bundledWebRevision() -> String {
+        guard let root = Bundle.main.resourceURL?.appendingPathComponent("public") else { return "missing" }
+        guard let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: nil) else {
+            return "unreadable"
+        }
+        var sawOld = false
+        var sawNew = false
+        while let url = enumerator.nextObject() as? URL {
+            guard url.pathExtension == "js" || url.pathExtension == "html" else { continue }
+            guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
+            if text.contains("Name the weather, then move") { sawOld = true }
+            if text.contains("What's the weather like?") { sawNew = true }
+        }
+        if sawNew && !sawOld { return "new" }
+        if sawOld { return "old" }
+        return "unknown"
+    }
+
+    private func showStaleWeb(_ revision: String) {
+        didShowApp = true
+        let controller = UIViewController()
+        controller.view.backgroundColor = window?.backgroundColor
+        let title = UILabel()
+        title.text = "This install still has the previous Today page."
+        title.font = .systemFont(ofSize: 28, weight: .semibold)
+        title.textColor = UIColor(red: 0.118, green: 0.110, blue: 0.086, alpha: 1)
+        title.numberOfLines = 0
+        let detail = UILabel()
+        detail.text = "Xcode is running the app on this iPhone, and the bundled page is \(revision). From the Lumacare folder, run npm run ios:mac, then press Run again."
+        detail.font = .systemFont(ofSize: 17)
+        detail.textColor = UIColor(red: 0.369, green: 0.349, blue: 0.310, alpha: 1)
+        detail.numberOfLines = 0
+        let stack = UIStackView(arrangedSubviews: [title, detail])
+        stack.axis = .vertical
+        stack.spacing = 16
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        controller.view.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
+            stack.trailingAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.trailingAnchor, constant: -24),
+            stack.centerYAnchor.constraint(equalTo: controller.view.centerYAnchor)
+        ])
+        window?.rootViewController = controller
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {

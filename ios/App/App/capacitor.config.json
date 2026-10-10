@@ -4,7 +4,7 @@
 	"webDir": "dist",
 	"backgroundColor": "#F5F4EE",
 	"server": {
-		"hostname": "app.lumacare.companion",
+		"hostname": "lumacare-build-4.local",
 		"iosScheme": "capacitor",
 		"androidScheme": "https"
 	},

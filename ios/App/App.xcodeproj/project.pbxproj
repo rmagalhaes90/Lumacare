@@ -172,7 +172,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nSRC=\"${SRCROOT}/App/public\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/public\"\necho \"Copying LumaCare screen from ${SRC}\"\nif [ ! -f \"${SRC}/index.html\" ]; then\n  echo \"error: Missing ${SRC}/index.html\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nif grep -R -q \"Name the weather, then move\" \"${SRC}\"; then\n  echo \"error: This Xcode project still has the old Today screen.\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nrm -rf \"${DEST}\"\ncp -R \"${SRC}\" \"${DEST}\"\n";
+			shellScript = "set -e\nSRC=\"${SRCROOT}/App/public\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/public\"\necho \"Copying LumaCare screen from ${SRC}\"\nif [ ! -f \"${SRC}/index.html\" ]; then\n  echo \"error: Missing ${SRC}/index.html\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nif grep -R -q \"Name the weather, then move\" \"${SRC}\"; then\n  echo \"error: This Xcode project still has the old Today screen.\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nif ! grep -R -q \"What's the weather like?\" \"${SRC}\"; then\n  echo \"error: The new Today screen is missing from App/public.\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nrm -rf \"${DEST}\"\ncp -R \"${SRC}\" \"${DEST}\"\necho \"LumaCare web files: new\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -323,7 +323,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -346,7 +346,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
