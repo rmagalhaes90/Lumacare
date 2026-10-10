@@ -1,4 +1,32 @@
+import { ACTIVITIES } from "./habits.js";
 import { dayKey, weekKeys } from "./storage.js";
+
+function activityInsight(checkins) {
+  const ranked = ACTIVITIES.map((activity) => {
+    const withIt = checkins.filter((item) => item.activities?.includes(activity.id));
+    const without = checkins.filter((item) => !item.activities?.includes(activity.id));
+    if (withIt.length < 2 || without.length < 2) return null;
+    const avg = (list) => list.reduce((sum, item) => sum + Number(item.mood || 0), 0) / list.length;
+    return { activity, delta: avg(withIt) - avg(without) };
+  }).filter(Boolean).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const best = ranked[0];
+  if (!best || Math.abs(best.delta) < 0.4) {
+    const any = checkins.some((item) => item.activities?.length);
+    return {
+      id: "activities",
+      title: "What you tagged",
+      body: any
+        ? "Tags are collecting. A pattern appears once the same activity shows up on both lighter and heavier days."
+        : "On a check-in, tag a few parts of the day — outside, sleep, people. This will compare them with your mood, and it stays on this device.",
+    };
+  }
+  const direction = best.delta > 0 ? "a little lighter" : "a little heavier";
+  return {
+    id: "activities",
+    title: "What travels with your mood",
+    body: `Days tagged ${best.activity.label} averaged ${direction} than days without that tag. That is a pattern in your notes, not a rule.`,
+  };
+}
 
 function daysBack(today, count) {
   return Array.from({ length: count }, (_, index) => {
@@ -36,6 +64,7 @@ export function buildInsights(state, today = new Date()) {
         ? `You checked in ${checkins.length} ${checkins.length === 1 ? "day" : "days"} in the last week. That is the pattern everything else hangs on.`
         : "No check-ins in the last week yet. One today is enough to start a rhythm.",
     },
+    activityInsight(checkins),
     {
       id: "energy",
       title: "Energy and stress",

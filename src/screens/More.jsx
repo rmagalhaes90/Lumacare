@@ -5,6 +5,8 @@ import { BREATHS } from "../lib/breathe.js";
 import { TONES } from "../lib/copy.js";
 import { exportBackup } from "../lib/backup.js";
 import { FREE_HABIT_LIMIT, canAddHabit, canUseBreath, canUseTheme } from "../lib/gating.js";
+import { ROUTINE_TIMES, STARTER_HABITS } from "../lib/habits.js";
+import { WeekDots } from "./Today.jsx";
 import { decorateInsights, buildInsights } from "../lib/insights.js";
 import { manageSubscriptionUrl, openExternal } from "../lib/purchases.js";
 import { dayKey, uid } from "../lib/storage.js";
@@ -18,6 +20,9 @@ export function More() {
   const [name, setName] = useState("");
   const [minimum, setMinimum] = useState("");
   const [full, setFull] = useState("");
+  const [when, setWhen] = useState("anytime");
+  const [cue, setCue] = useState("");
+  const [why, setWhy] = useState("");
   const [backupNote, setBackupNote] = useState("");
   const [restoreNote, setRestoreNote] = useState("");
   const insights = decorateInsights(buildInsights(state), isPremium);
@@ -31,11 +36,36 @@ export function More() {
     }
     update((current) => ({
       ...current,
-      habits: [...current.habits, { id: uid(), name: name.trim(), minimum: minimum.trim(), full: full.trim(), createdAt: Date.now(), logs: {} }],
+      habits: [...current.habits, {
+        id: uid(),
+        name: name.trim(),
+        minimum: minimum.trim(),
+        full: full.trim(),
+        when,
+        cue: cue.trim(),
+        why: why.trim(),
+        createdAt: Date.now(),
+        logs: {},
+      }],
     }));
     setName("");
     setMinimum("");
     setFull("");
+    setCue("");
+    setWhy("");
+    setWhen("anytime");
+  }
+
+  function useStarter(starter) {
+    if (state.habits.some((habit) => habit.name === starter.name)) return;
+    if (!canAddHabit(state.habits, isPremium)) {
+      openPaywall();
+      return;
+    }
+    update((current) => ({
+      ...current,
+      habits: [...current.habits, { ...starter, id: uid(), createdAt: Date.now(), logs: {} }],
+    }));
   }
 
   function chooseTheme(themeId) {
@@ -103,22 +133,38 @@ export function More() {
 
       <section className="card stack">
         <h2>Habits</h2>
-        <p className="tiny muted">Free includes {FREE_HABIT_LIMIT}. The minimum is the success. You have {state.habits.length}.</p>
+        <p className="tiny muted">Free includes {FREE_HABIT_LIMIT}. The minimum is the success. A cue makes it easier to start. You have {state.habits.length}.</p>
+        <div className="chips">
+          {STARTER_HABITS.map((starter) => (
+            <button key={starter.name} type="button" className="chip" onClick={() => useStarter(starter)}>{starter.name}</button>
+          ))}
+        </div>
         <input className="field" value={name} onChange={(event) => setName(event.target.value)} placeholder="Habit name" aria-label="Habit name" />
         <input className="field" value={minimum} onChange={(event) => setMinimum(event.target.value)} placeholder="Minimum version" aria-label="Minimum version" />
         <input className="field" value={full} onChange={(event) => setFull(event.target.value)} placeholder="Full version, optional" aria-label="Full version" />
+        <input className="field" value={cue} onChange={(event) => setCue(event.target.value)} placeholder="Cue: after I…" aria-label="Cue" />
+        <input className="field" value={why} onChange={(event) => setWhy(event.target.value)} placeholder="Why this matters" aria-label="Why this matters" />
+        <div className="chips">
+          {ROUTINE_TIMES.map((slot) => (
+            <button key={slot.id} type="button" className={`chip ${when === slot.id ? "on" : ""}`} onClick={() => setWhen(slot.id)}>{slot.label}</button>
+          ))}
+        </div>
         <Button onClick={addHabit}>{canAddHabit(state.habits, isPremium) ? "Add habit" : "Unlock more habits"}</Button>
         {state.habits.map((habit) => (
-          <div key={habit.id} className="spread">
-            <div>
-              <strong>{habit.name}</strong>
-              <div className="tiny muted">{habit.minimum}{habit.full ? ` · Full: ${habit.full}` : ""}</div>
+          <article key={habit.id}>
+            <div className="spread">
+              <div>
+                <strong>{habit.name}</strong>
+                <div className="tiny muted">{ROUTINE_TIMES.find((slot) => slot.id === habit.when)?.label} · {habit.minimum}{habit.full ? ` · Full: ${habit.full}` : ""}</div>
+              </div>
+              <span className="row">
+                <HabitToggle habit={habit} today={today} update={update} />
+                <button type="button" className="chip" onClick={() => update((current) => ({ ...current, habits: current.habits.filter((item) => item.id !== habit.id) }))}>Remove</button>
+              </span>
             </div>
-            <span className="row">
-              <HabitToggle habit={habit} today={today} update={update} />
-              <button type="button" className="chip" onClick={() => update((current) => ({ ...current, habits: current.habits.filter((item) => item.id !== habit.id) }))}>Remove</button>
-            </span>
-          </div>
+            <WeekDots habit={habit} />
+            {habit.why ? <p className="tiny muted">{habit.why}</p> : null}
+          </article>
         ))}
       </section>
 

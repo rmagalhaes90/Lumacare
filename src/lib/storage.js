@@ -1,3 +1,5 @@
+import { normalizeCheckin, normalizeHabit } from "./habits.js";
+
 export const STORAGE_KEY = "lumacare-v1";
 
 export function uid() {
@@ -70,12 +72,12 @@ export function normalizeState(data) {
     ...base,
     ...data,
     profile,
-    checkins: asArray(data.checkins),
+    checkins: asArray(data.checkins).map(normalizeCheckin),
     tasks: asArray(data.tasks),
     brainDump: asArray(data.brainDump),
     focusSessions: asArray(data.focusSessions),
     activeFocus: data.activeFocus || null,
-    habits: asArray(data.habits),
+    habits: asArray(data.habits).map(normalizeHabit),
     journal: asArray(data.journal),
   };
 }

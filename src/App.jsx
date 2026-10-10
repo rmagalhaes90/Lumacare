@@ -148,7 +148,15 @@ export function App() {
   return (
     <LumaContext.Provider value={api}>
       <div className="app" style={themeVars(theme)} data-dark={theme.dark ? "true" : "false"} data-reduce={state.profile.reducedMotion ? "true" : "false"}>
-        {state.profile.onboarded ? <Screen /> : <Onboarding />}
+        {state.profile.onboarded ? (
+          <div key={tab} className="screen">
+            <Screen />
+          </div>
+        ) : (
+          <div className="screen">
+            <Onboarding />
+          </div>
+        )}
         {state.profile.onboarded && !breathId ? (
           <nav className="nav" aria-label="Primary">
             {TABS.map((item) => {

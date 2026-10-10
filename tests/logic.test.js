@@ -4,8 +4,9 @@ import { suggestBreakdown } from "../src/lib/breakdown.js";
 import { phaseAt } from "../src/lib/breathe.js";
 import { canAddHabit, canUseBreath, canUseTheme, FREE_HABIT_LIMIT } from "../src/lib/gating.js";
 import { buildInsights, decorateInsights } from "../src/lib/insights.js";
+import { nextStarters, readCheckin } from "../src/lib/habits.js";
 import { suggestNext } from "../src/lib/suggest.js";
-import { normalizeState } from "../src/lib/storage.js";
+import { dayKey, normalizeState } from "../src/lib/storage.js";
 
 test("breakdown returns three steps for known and unknown types", () => {
   for (const type of ["work", "chore", "creative", "health", "admin", "nope"]) {
@@ -68,9 +69,47 @@ test("breath timing finishes after the full cycle", () => {
 });
 
 test("normalize keeps partial saves usable", () => {
-  const state = normalizeState({ profile: { name: "Ada", themeId: "dusk" }, tasks: [{ id: "1" }] });
+  const state = normalizeState({
+    profile: { name: "Ada", themeId: "dusk" },
+    tasks: [{ id: "1" }],
+    habits: [{ id: "h", name: "Water", minimum: "One sip" }],
+    checkins: [{ id: "c", date: "2026-10-10", mood: 3, activities: ["outside", "nope"] }],
+  });
   assert.equal(state.profile.name, "Ada");
   assert.ok(state.profile.keptThemeIds.includes("dusk"));
   assert.deepEqual(state.journal, []);
   assert.equal(state.tasks.length, 1);
+  assert.equal(state.habits[0].when, "anytime");
+  assert.deepEqual(state.checkins[0].activities, ["outside"]);
+});
+
+test("a check-in reading stays gentle and starters respect the free limit", () => {
+  assert.match(readCheckin({ mood: 2, energy: 1, stress: 2 }), /minimum/i);
+  assert.match(readCheckin({ mood: 3, energy: 3, stress: 5 }), /breath/i);
+  const adding = nextStarters([{ name: "Water" }], ["Daylight", "Water", "Phone down"], 1);
+  assert.deepEqual(adding.map((item) => item.name), ["Daylight"]);
+});
+
+test("activity tags become an insight only when the pattern is real", () => {
+  const today = new Date(2026, 9, 10);
+  const on = (offset, extra) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - offset);
+    return { date: dayKey(date), energy: 3, stress: 2, ...extra };
+  };
+  const insights = buildInsights({
+    checkins: [
+      on(0, { mood: 5, activities: ["outside"] }),
+      on(1, { mood: 4, activities: ["outside"] }),
+      on(2, { mood: 2, activities: [] }),
+      on(3, { mood: 2, activities: [] }),
+    ],
+    tasks: [],
+    habits: [],
+    focusSessions: [],
+    journal: [],
+  }, today);
+  const pattern = insights.find((item) => item.id === "activities");
+  assert.match(pattern.body, /Outside/);
+  assert.equal(insights[0].id, "checkin");
 });
