@@ -27,7 +27,10 @@ if ! grep -q 'DisableDeploy' ios/App/App/config.xml; then
   exit 1
 fi
 
-echo "This build is $(git rev-parse --short HEAD)."
+echo "Xcode installs this local folder, not the GitHub website:"
+echo "  $(pwd)/ios/App/App/public"
+echo "build.txt:"
+cat ios/App/App/public/build.txt
 echo "Opening ios/App/App.xcodeproj"
 echo "1. Quit any Xcode window that is not this project."
 echo "2. At the top of Xcode, choose your iPhone, not a simulator."

@@ -13,7 +13,7 @@
     "android:add": "cap add android",
     "ios:add": "cap add ios --packagemanager SPM",
     "mobile:sync": "npm run icons && npm run build && cap sync",
-    "ios:sync": "npm run icons && npm run build && cap sync ios",
+    "ios:sync": "npm run icons && npm run build && cap sync ios && node scripts/stamp-ios.js",
     "android:open": "cap open android",
     "ios:open": "cap open ios",
     "ios:mac": "bash scripts/mac-ios.sh"
