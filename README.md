@@ -11,8 +11,10 @@ Today dashboard with mood/energy/stress check-in and adaptive suggestions · tas
 ## Requirements
 
 - Node.js 18 or newer
+- For an installable Apple build: a Mac with Xcode 16 or newer
+- A free Apple ID is enough to run on the iOS Simulator and on your own iPhone (the free signing certificate lasts about 7 days)
+- TestFlight and the App Store need a paid Apple Developer Program membership
 - For native Android builds: Android Studio
-- For native iOS builds: a Mac with Xcode
 
 ## Run it
 
@@ -43,18 +45,51 @@ npm run android:open     # opens Android Studio
 
 In Android Studio: run on a connected device or emulator, or **Build → Build APK(s)** to produce an installable APK. For Play Store distribution, generate a signed release bundle (Build → Generate Signed Bundle).
 
-## Option C — Native iOS app
+## Option C — Native Apple app
+
+The iOS project is already in `ios/`. It uses Swift Package Manager (no CocoaPods). Bundle id: `app.lumacare.companion`. Display name: LumaCare. The deployment target is iOS 15, portrait, with a privacy manifest and `ITSAppUsesNonExemptEncryption = false` so TestFlight does not stop on the export-compliance question.
 
 On a Mac:
 
 ```bash
 npm install
-npm run ios:add
-npm run mobile:sync
-npm run ios:open         # opens Xcode
+npm run ios:mac
 ```
 
-Select your team under Signing & Capabilities, then run on a device. App Store distribution requires an Apple Developer account.
+`ios:mac` installs dependencies, rebuilds the web app, syncs it into the Xcode project, and opens `ios/App/App.xcodeproj`.
+
+Then in Xcode:
+
+1. Select the **App** target → **Signing & Capabilities** → **Team**. Choose your Apple ID team. Xcode creates the provisioning profile.
+2. Choose an iPhone simulator, or plug in your iPhone and trust the computer.
+3. Press **Run**.
+
+The first launch on a personal device signed with a free Apple ID may need Settings → General → VPN & Device Management → trust your developer certificate.
+
+After you change web code, run `npm run ios:sync` before the next Xcode build. Native shells do not rebuild the web app on their own.
+
+### What you can test before App Store Connect exists
+
+- The whole app, offline, including check-in, tasks, focus, journal, habits, breathing, themes, and backup.
+- **LumaCare+ gating** without a real purchase: More → the “Preview Plus on this device” switch. That switch is local only. It disappears once a RevenueCat API key is set, and it is not a subscription.
+- The paywall layout, Restore purchases, and the free-tier limits (3 habits, 2 themes, Box breathing, 1 insight).
+
+`ios/App/App/LumaCare.storekit` defines `lumacare_plus_monthly` ($4.99) and `lumacare_plus_yearly` ($29.99). The shared Run scheme already selects that file. RevenueCat still loads offerings from its own dashboard, so the Subscribe button completes a real purchase only after the API key and store products below are in place. Until then the paywall explains that and leaves the free app usable.
+
+### App Store Connect, subscriptions, and TestFlight
+
+1. Enroll in the Apple Developer Program and sign in at [App Store Connect](https://appstoreconnect.apple.com).
+2. Create an app with bundle id `app.lumacare.companion` and name LumaCare.
+3. Create a subscription group named **LumaCare+** with two auto-renewable products:
+   - `lumacare_plus_monthly` — $4.99 / month
+   - `lumacare_plus_yearly` — $29.99 / year
+4. Add a privacy policy URL, then paste that URL and your terms URL into `PRIVACY_POLICY_URL` and `TERMS_URL` in `src/lib/purchases.js`.
+5. In App Privacy, declare purchase history as used for app functionality, linked to the user, and not used for tracking. The in-app privacy copy already says the same thing. Personal entries stay on device.
+6. Archive in Xcode (Any iOS Device → Product → Archive) and upload with the Organizer. The first build is what TestFlight and the subscription review ride on.
+7. In RevenueCat, add the iOS app, the App Store Connect API key, entitlement `premium`, and offering `default` containing both products. Paste the public iOS SDK key into `REVENUECAT_API_KEY_IOS`.
+8. `npm run ios:sync`, install on a real device, and buy with a Sandbox Apple ID. StoreKit purchases do not work reliably in the Simulator once you are on the live RevenueCat key.
+
+Google Play uses the same product ids. The Android project is not generated yet; `npm run android:add` then `npm run mobile:sync` creates it when you want that side too.
 
 ## Monetization — LumaCare+
 
@@ -91,7 +126,7 @@ One rule the code follows throughout: **a limit is never applied retroactively.*
 3. In Google Play Console, create matching subscription products with the same two IDs and prices under Monetize → Subscriptions.
 4. Back in RevenueCat: add your iOS and Android app, paste in the App Store Connect / Play Console API credentials it asks for, then create one **entitlement** called `premium` and attach both products to it. Create one **offering** called `default` containing both packages.
 5. Copy your RevenueCat public SDK keys (Project Settings → API Keys) into `REVENUECAT_API_KEY_IOS` and `REVENUECAT_API_KEY_ANDROID` in `src/lib/purchases.js`.
-6. `npm run mobile:sync` and test with a sandbox/test account on a real device — in-app purchases don't work in the iOS Simulator or most emulators.
+6. `npm run ios:sync` and test with a sandbox Apple ID on a real device. The local StoreKit file is for Xcode's store configuration; live RevenueCat purchases need the device.
 
 Until you do this, the app runs safely in free-tier mode: `initPurchases` detects it's not on a native platform (or that RevenueCat isn't configured) and just treats everyone as free, so nothing crashes in the browser preview or before you've set up the store side.
 
@@ -108,7 +143,7 @@ You mentioned wanting ads on the free tier too. It's technically straightforward
 
 ## After changing web code
 
-Native shells don't rebuild automatically — run `npm run mobile:sync` again, then rebuild in Android Studio / Xcode.
+Native shells don't rebuild automatically. Run `npm run ios:sync` (or `npm run mobile:sync` for every added platform), then rebuild in Xcode.
 
 ## Icons
 
@@ -122,17 +157,17 @@ Icons are generated locally (no design tools needed): `npm run icons` regenerate
 
 ## Architecture notes
 
-- Single-page React 18 + Vite. Styling is inline with a theme-token system (six themes in `THEMES`), so there's no CSS pipeline to configure.
+- Single-page React 18 + Vite. Theme tokens live in `src/lib/themes.js` and are applied as CSS variables. There is no Sass or Tailwind setup.
 - Copy is centralized in `COPY` and keyed by encouragement tone (gentle / direct / motivational / minimal).
 - The task-breakdown assistant (`suggestBreakdown`) is deterministic and offline by design — templates keyed to task type. A future LLM can be swapped in behind the same function signature.
 - `vite-plugin-pwa` generates the service worker (auto-update strategy) and web manifest.
-- Capacitor wraps the same `dist/` output for native builds; `capacitor.config.json` holds the app ID and name.
+- Capacitor 8 wraps the same `dist/` output. `capacitor.config.json` holds the app ID and name. The Apple project uses Swift Package Manager and already includes the status bar, splash, keyboard, haptics, files, share, browser, and RevenueCat plugins.
 
 ## Known limitations / good next steps
 
 - Restore-from-backup UI (import JSON) — currently export only.
 - Local notifications via `@capacitor/local-notifications` for gentle reminders.
-- Haptics via `@capacitor/haptics` on breathing phase changes.
+- Breathing already uses a light haptic on phase changes when Reduced motion is off.
 - Routines builder, weekly review flow, and goals from the full product spec.
 - Migrating storage from localStorage to IndexedDB (Dexie) if data grows large.
 
