@@ -14,7 +14,6 @@
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
-		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		7C4E9A012FED79650016851F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7C4E9A022FED79650016851F /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -149,7 +148,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
-				50B271D11FEDC1A000F3C39B /* public in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
@@ -174,7 +172,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nSRC=\"${SRCROOT}/App/public\"\nDEST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/public\"\nif grep -R -q \"Name the weather, then move\" \"$SRC\"; then\n  echo \"error: Xcode is about to install the old Today screen.\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nrm -rf \"$DEST\"\ncp -R \"$SRC\" \"$DEST\"\n";
+			shellScript = "set -e\nSRC=\"${SRCROOT}/App/public\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/public\"\necho \"Copying LumaCare screen from ${SRC}\"\nif [ ! -f \"${SRC}/index.html\" ]; then\n  echo \"error: Missing ${SRC}/index.html\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nif grep -R -q \"Name the weather, then move\" \"${SRC}\"; then\n  echo \"error: This Xcode project still has the old Today screen.\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nrm -rf \"${DEST}\"\ncp -R \"${SRC}\" \"${DEST}\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -325,7 +323,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -347,7 +346,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (

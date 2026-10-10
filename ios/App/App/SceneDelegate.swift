@@ -2,6 +2,17 @@ import UIKit
 import Capacitor
 import WebKit
 
+/// Always read the web app that was just copied into this build.
+class LumaBridgeViewController: CAPBridgeViewController {
+    override func instanceDescriptor() -> InstanceDescriptor {
+        let descriptor = super.instanceDescriptor()
+        if let bundled = Bundle.main.resourceURL?.appendingPathComponent("public") {
+            descriptor.appLocation = bundled
+        }
+        return descriptor
+    }
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private var didShowApp = false
@@ -13,8 +24,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.backgroundColor = UIColor(red: 0.961, green: 0.957, blue: 0.933, alpha: 1)
         window?.makeKeyAndVisible()
 
-        // The phone keeps the previous screen in the web view. Clear that before
-        // the new files load, and leave check-ins and habits in local storage.
+        // Drop the saved page before the new files load.
         let stale: Set<String> = [
             WKWebsiteDataTypeDiskCache,
             WKWebsiteDataTypeMemoryCache,
@@ -33,7 +43,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func showApp() {
         guard !didShowApp else { return }
         didShowApp = true
-        window?.rootViewController = CAPBridgeViewController()
+        window?.rootViewController = LumaBridgeViewController()
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {

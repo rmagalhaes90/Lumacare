@@ -7,8 +7,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        clearSavedScreen()
         return true
+    }
+
+    /// The phone can keep serving an older Today page from WebKit even after a new
+    /// build is installed. Remove that saved copy before the window opens.
+    private func clearSavedScreen() {
+        let manager = FileManager.default
+        guard let library = manager.urls(for: .libraryDirectory, in: .userDomainMask).first else { return }
+        for name in ["WebKit", "Caches", "NoCloud/ionic_built_snapshots"] {
+            try? manager.removeItem(at: library.appendingPathComponent(name))
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

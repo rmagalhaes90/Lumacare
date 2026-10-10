@@ -68,7 +68,7 @@ The first launch on a personal device signed with a free Apple ID may need Setti
 
 `ios:mac` pulls this branch, rebuilds the screen, and opens Xcode. Each Run copies those files into the app and clears the phone’s saved copy of the previous screen before it appears. Check-ins and habits stay on the device.
 
-At the top of Xcode, choose your iPhone, then press Run and wait until the phone restarts LumaCare. This build uses a new on-device address, so the saved copy of “Name the weather, then move.” cannot open again. The phone asks for your name once more, then Today shows a single mood row.
+At the top of Xcode, choose your iPhone, then press Run. The phone should flash the words “Small steps.” before LumaCare opens. Today then shows a single mood row. Each Run copies that screen into the app, instead of leaving the previous one in place.
 
 ### What you can test before App Store Connect exists
 
