@@ -174,7 +174,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nSRC=\"${SRCROOT}/App/public\"\nDEST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/public\"\nrm -rf \"$DEST\"\ncp -R \"$SRC\" \"$DEST\"\n";
+			shellScript = "set -e\nSRC=\"${SRCROOT}/App/public\"\nDEST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/public\"\nif grep -R -q \"Name the weather, then move\" \"$SRC\"; then\n  echo \"error: Xcode is about to install the old Today screen.\"\n  echo \"error: Quit Xcode. In Terminal, cd into the Lumacare folder and run: npm run ios:mac\"\n  exit 1\nfi\nrm -rf \"$DEST\"\ncp -R \"$SRC\" \"$DEST\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

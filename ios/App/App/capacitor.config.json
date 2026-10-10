@@ -3,6 +3,11 @@
 	"appName": "LumaCare",
 	"webDir": "dist",
 	"backgroundColor": "#F5F4EE",
+	"server": {
+		"hostname": "app.lumacare.companion",
+		"iosScheme": "capacitor",
+		"androidScheme": "https"
+	},
 	"android": {
 		"allowMixedContent": false
 	},
