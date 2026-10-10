@@ -6,12 +6,14 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.js",
       registerType: "autoUpdate",
-      injectRegister: "auto",
+      injectRegister: false,
       includeAssets: ["apple-touch-icon.png"],
-      workbox: {
+      injectManifest: {
         globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
-        navigateFallback: "index.html",
       },
       manifest: {
         name: "LumaCare",

@@ -68,6 +68,8 @@ The first launch on a personal device signed with a free Apple ID may need Setti
 
 After you change web code, run `npm run ios:sync` before the next Xcode build. Native shells do not rebuild the web app on their own.
 
+The iPhone app keeps the last screen in an offline cache. This build clears that cache on launch, so a new check-in can replace “Name the weather, then move.” Pull this branch, run `npm run ios:sync`, then press Run in Xcode. If that sentence is still there, delete LumaCare from the simulator or phone and press Run again.
+
 ### What you can test before App Store Connect exists
 
 - The whole app, offline, including check-in, tasks, focus, journal, habits, breathing, themes, and backup.

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { suggestBreakdown } from "../src/lib/breakdown.js";
 import { phaseAt } from "../src/lib/breathe.js";
@@ -114,4 +115,14 @@ test("activity tags become an insight only when the pattern is real", () => {
   const pattern = insights.find((item) => item.id === "activities");
   assert.match(pattern.body, /Outside/);
   assert.equal(insights[0].id, "checkin");
+});
+
+test("the native shell drops a cached service worker instead of replaying it", () => {
+  const worker = readFileSync(new URL("../src/sw.js", import.meta.url), "utf8");
+  const entry = readFileSync(new URL("../src/main.jsx", import.meta.url), "utf8");
+  assert.match(worker, /capacitor:/);
+  assert.match(worker, /unregister/);
+  assert.match(entry, /isNativePlatform/);
+  assert.match(entry, /unregister/);
+  assert.doesNotMatch(readFileSync(new URL("../src/lib/copy.js", import.meta.url), "utf8"), /Name the weather/);
 });
