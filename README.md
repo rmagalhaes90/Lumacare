@@ -66,9 +66,16 @@ Then in Xcode:
 
 The first launch on a personal device signed with a free Apple ID may need Settings → General → VPN & Device Management → trust your developer certificate.
 
-`ios:mac` pulls this branch into the folder on the Mac and rebuilds the screen. Xcode installs that local folder (`ios/App/App/public`). Linking the GitHub repo does not replace it. `ios/App/App/public/build.txt` must contain `6` before you press Run. Each Run opens the Today page in an empty web cache, so the phone cannot keep the previous screen.
+Quit Xcode, plug in the iPhone, and from this folder run:
 
-At the top of Xcode, choose your iPhone, then press Run. The Xcode console must contain `LumaCare build 6 starting` and `LumaCare build 6 web: new`. Today then shows a single mood row. If those lines are missing, delete LumaCare from the iPhone and press Run again. Check-ins are kept in the app’s own files. A home-screen icon added from Safari is a separate copy and stays on the previous page.
+```bash
+git fetch origin
+git checkout cursor/apple-ios-app-6da4
+git reset --hard origin/cursor/apple-ios-app-6da4
+npm run ios:mac
+```
+
+That replaces the local files Xcode has been compiling and installs the app on the connected iPhone. The previous copy is removed first, so the phone cannot keep `capacitor://localhost`. The console then shows `Loading app at capacitor://lumacare-build-6.local`. Today asks for one mood. A home-screen icon added from Safari is a separate copy and stays on the previous page.
 
 ### What you can test before App Store Connect exists
 
