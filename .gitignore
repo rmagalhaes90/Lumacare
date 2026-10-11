@@ -8,6 +8,8 @@ dist/
 ios/App/Pods/
 ios/App/build/
 ios/DerivedData/
+.derived/
+.signing-team
 
 android/.gradle/
 android/app/build/

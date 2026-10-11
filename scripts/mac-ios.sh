@@ -9,9 +9,12 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
 fi
 
 branch="cursor/apple-ios-app-6da4"
-team="$(grep -m1 'DEVELOPMENT_TEAM = ' ios/App/App.xcodeproj/project.pbxproj | sed -E 's/.*DEVELOPMENT_TEAM = ([^;]+);/\1/' || true)"
+team=""
+if [[ -f .signing-team ]]; then
+  team="$(tr -d '[:space:]' < .signing-team)"
+fi
 if [[ -z "${team}" ]]; then
-  team="$(security find-identity -p codesigning -v 2>/dev/null | sed -nE 's/.*\(([A-Z0-9]{10})\).*/\1/p' | head -1 || true)"
+  team="$(grep -m1 'DEVELOPMENT_TEAM = ' ios/App/App.xcodeproj/project.pbxproj | sed -E 's/.*DEVELOPMENT_TEAM = ([^;]+);/\1/' || true)"
 fi
 
 git fetch origin
@@ -19,10 +22,15 @@ git checkout "$branch"
 git reset --hard "origin/$branch"
 
 if [[ -z "${team}" ]]; then
-  echo "Xcode has no signing team for this app. Open ios/App/App.xcodeproj, select the App target, Signing & Capabilities, choose your Apple ID team, close Xcode, and run npm run ios:mac again."
+  echo "The app files are ready. Xcode still needs your Apple ID team, once."
+  echo "1. In the project that just opened, select the App target."
+  echo "2. Signing & Capabilities → Team → choose your Apple ID."
+  echo "3. At the top, choose your iPhone and press Run."
+  echo "Do not run npm run ios:mac again before that."
   open ios/App/App.xcodeproj
   exit 1
 fi
+printf '%s\n' "${team}" > .signing-team
 echo "Signing team: ${team}"
 
 npm install
