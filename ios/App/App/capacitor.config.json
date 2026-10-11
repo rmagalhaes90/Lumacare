@@ -1,0 +1,50 @@
+{
+	"appId": "app.lumacare.companion",
+	"appName": "LumaCare",
+	"webDir": "dist",
+	"backgroundColor": "#F5F4EE",
+	"server": {
+		"hostname": "lumacare-build-6.local",
+		"iosScheme": "capacitor",
+		"androidScheme": "https"
+	},
+	"android": {
+		"allowMixedContent": false
+	},
+	"ios": {
+		"contentInset": "never",
+		"backgroundColor": "#F5F4EE",
+		"preferredContentMode": "mobile",
+		"allowsLinkPreview": false
+	},
+	"cordova": {
+		"preferences": {
+			"DisableDeploy": "true"
+		}
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchAutoHide": true,
+			"launchShowDuration": 600,
+			"backgroundColor": "#F5F4EE",
+			"showSpinner": false,
+			"splashFullScreen": true,
+			"splashImmersive": false
+		},
+		"Keyboard": {
+			"resize": "native",
+			"resizeOnFullScreen": true
+		}
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"CAPBrowserPlugin",
+		"FilesystemPlugin",
+		"HapticsPlugin",
+		"KeyboardPlugin",
+		"SharePlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"PurchasesPlugin"
+	]
+}
