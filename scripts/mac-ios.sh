@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prepare LumaCare and open the Xcode project. Run on a Mac.
+# Replace the local LumaCare files with the GitHub branch and install that app on the connected iPhone.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -8,37 +8,104 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 1
 fi
 
-branch="$(git rev-parse --abbrev-ref HEAD)"
-git pull --ff-only origin "$branch"
+branch="cursor/apple-ios-app-6da4"
+team="$(grep -m1 'DEVELOPMENT_TEAM = ' ios/App/App.xcodeproj/project.pbxproj | sed -E 's/.*DEVELOPMENT_TEAM = ([^;]+);/\1/' || true)"
+
+git fetch origin
+git checkout "$branch"
+git reset --hard "origin/$branch"
+
+if [[ -n "${team}" ]] && ! grep -q 'DEVELOPMENT_TEAM = ' ios/App/App.xcodeproj/project.pbxproj; then
+  python3 - "$team" << 'PY'
+import pathlib, sys
+team = sys.argv[1]
+path = pathlib.Path("ios/App/App.xcodeproj/project.pbxproj")
+text = path.read_text()
+text = text.replace("CODE_SIGN_STYLE = Automatic;\n", f"CODE_SIGN_STYLE = Automatic;\n\t\t\t\tDEVELOPMENT_TEAM = {team};\n")
+path.write_text(text)
+print(f"Kept signing team {team}")
+PY
+fi
+
 npm install
 npm run ios:sync
 
-echo ""
-if ! grep -R -q "What's the weather like?" ios/App/App/public; then
-  echo "The new Today screen is not in ios/App/App/public. Leave Xcode closed and run this again."
+hostname="$(grep hostname ios/App/App/capacitor.config.json)"
+echo "Local commit: $(git rev-parse --short HEAD)"
+echo "App address: ${hostname}"
+echo "build.txt:"
+cat ios/App/App/public/build.txt
+if ! grep -q 'lumacare-build-6.local' ios/App/App/capacitor.config.json; then
+  echo "The local project still points at capacitor://localhost. Stop here and paste this output."
   exit 1
 fi
-if grep -R -q "Name the weather, then move" ios/App/App/public; then
-  echo "ios/App/App/public still contains the old Today screen. Leave Xcode closed and run this again."
-  exit 1
-fi
-if ! grep -q 'DisableDeploy' ios/App/App/config.xml; then
-  echo "The iPhone project is missing DisableDeploy, so it can reopen the saved page."
+if ! grep -q '^6$' ios/App/App/public/build.txt; then
+  echo "ios/App/App/public/build.txt is not build 6."
   exit 1
 fi
 
-echo "Xcode installs this local folder, not the GitHub website:"
-echo "  $(pwd)/ios/App/App/public"
-echo "build.txt:"
-cat ios/App/App/public/build.txt
-echo "Opening ios/App/App.xcodeproj"
-echo "1. Quit any Xcode window that is not this project."
-echo "2. At the top of Xcode, choose your iPhone, not a simulator."
-echo "3. Product → Clean Build Folder, then press Run."
-echo "4. In the Xcode console, these two lines mean the phone is running this build:"
-echo "   LumaCare build 6 starting"
-echo "   LumaCare build 6 web: new"
-echo "Today then shows one mood row. Energy and Stress are not on that first screen."
-echo "If those two lines are missing, delete LumaCare from the iPhone and press Run again."
-echo "The shared scheme already points at App/LumaCare.storekit for local StoreKit testing."
-open ios/App/App.xcodeproj
+device_json="$(mktemp)"
+if ! xcrun devicectl list devices --json-output "$device_json" >/dev/null 2>&1; then
+  echo "No iPhone was found. Plug in the phone, unlock it, and run this again."
+  exit 1
+fi
+
+device_id="$(python3 - "$device_json" << 'PY'
+import json, sys
+data = json.load(open(sys.argv[1]))
+devices = data.get("result", {}).get("devices", [])
+connected = []
+for device in devices:
+    hardware = device.get("hardwareProperties") or {}
+    connection = device.get("connectionProperties") or {}
+    props = device.get("deviceProperties") or {}
+    platform = hardware.get("platform") or props.get("platform") or ""
+    if "iOS" not in platform and "iphone" not in platform.lower():
+        continue
+    state = (connection.get("tunnelState") or connection.get("transportType") or "").lower()
+    if state and state not in {"connected", "available", "wired"} and "connect" not in state:
+        continue
+    connected.append((props.get("name") or "", device.get("identifier") or device.get("udid") or ""))
+if not connected:
+    sys.exit(0)
+ranked = sorted(connected, key=lambda item: (0 if "max" in item[0].lower() or "ramon" in item[0].lower() else 1, item[0]))
+print(ranked[0][1])
+PY
+)"
+
+if [[ -z "${device_id}" ]]; then
+  echo "The iPhone is not connected. Unlock it, tap Trust, and run this again."
+  exit 1
+fi
+
+echo "Installing on device ${device_id}"
+derived="${PWD}/.derived"
+rm -rf "$derived"
+xcodebuild \
+  -project ios/App/App.xcodeproj \
+  -scheme App \
+  -destination "id=${device_id}" \
+  -derivedDataPath "$derived" \
+  -allowProvisioningUpdates \
+  build
+
+app="$(find "$derived" -type d -path '*iphoneos/App.app' | head -1)"
+if [[ -z "${app}" ]]; then
+  echo "The build finished without an iPhone app."
+  exit 1
+fi
+if ! grep -q 'lumacare-build-6.local' "${app}/capacitor.config.json"; then
+  echo "The built app still points at capacitor://localhost."
+  exit 1
+fi
+
+xcrun devicectl device uninstall app --device "$device_id" app.lumacare.companion >/dev/null 2>&1 || true
+xcrun devicectl device install app --device "$device_id" "$app"
+xcrun devicectl device process launch --device "$device_id" app.lumacare.companion
+
+echo ""
+echo "Installed build 6 on the iPhone and removed the previous copy."
+echo "Today should ask What's the weather like? with only the mood choices."
+echo "In Xcode the matching lines are:"
+echo "  LumaCare build 6 starting"
+echo "  Loading app at capacitor://lumacare-build-6.local..."
