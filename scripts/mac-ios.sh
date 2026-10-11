@@ -10,22 +10,20 @@ fi
 
 branch="cursor/apple-ios-app-6da4"
 team="$(grep -m1 'DEVELOPMENT_TEAM = ' ios/App/App.xcodeproj/project.pbxproj | sed -E 's/.*DEVELOPMENT_TEAM = ([^;]+);/\1/' || true)"
+if [[ -z "${team}" ]]; then
+  team="$(security find-identity -p codesigning -v 2>/dev/null | sed -nE 's/.*\(([A-Z0-9]{10})\).*/\1/p' | head -1 || true)"
+fi
 
 git fetch origin
 git checkout "$branch"
 git reset --hard "origin/$branch"
 
-if [[ -n "${team}" ]] && ! grep -q 'DEVELOPMENT_TEAM = ' ios/App/App.xcodeproj/project.pbxproj; then
-  python3 - "$team" << 'PY'
-import pathlib, sys
-team = sys.argv[1]
-path = pathlib.Path("ios/App/App.xcodeproj/project.pbxproj")
-text = path.read_text()
-text = text.replace("CODE_SIGN_STYLE = Automatic;\n", f"CODE_SIGN_STYLE = Automatic;\n\t\t\t\tDEVELOPMENT_TEAM = {team};\n")
-path.write_text(text)
-print(f"Kept signing team {team}")
-PY
+if [[ -z "${team}" ]]; then
+  echo "Xcode has no signing team for this app. Open ios/App/App.xcodeproj, select the App target, Signing & Capabilities, choose your Apple ID team, close Xcode, and run npm run ios:mac again."
+  open ios/App/App.xcodeproj
+  exit 1
 fi
+echo "Signing team: ${team}"
 
 npm install
 npm run ios:sync
@@ -87,6 +85,8 @@ xcodebuild \
   -destination "id=${device_id}" \
   -derivedDataPath "$derived" \
   -allowProvisioningUpdates \
+  DEVELOPMENT_TEAM="${team}" \
+  CODE_SIGN_STYLE=Automatic \
   build
 
 app="$(find "$derived" -type d -path '*iphoneos/App.app' | head -1)"
