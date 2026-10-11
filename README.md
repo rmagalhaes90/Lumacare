@@ -66,9 +66,9 @@ Then in Xcode:
 
 The first launch on a personal device signed with a free Apple ID may need Settings → General → VPN & Device Management → trust your developer certificate.
 
-`ios:mac` pulls this branch into the folder on the Mac and rebuilds the screen. Xcode installs that local folder (`ios/App/App/public`). Linking the GitHub repo does not replace it. `ios/App/App/public/build.txt` must contain `5` before you press Run. Each Run opens a new page the previous install cannot keep on screen.
+`ios:mac` pulls this branch into the folder on the Mac and rebuilds the screen. Xcode installs that local folder (`ios/App/App/public`). Linking the GitHub repo does not replace it. `ios/App/App/public/build.txt` must contain `6` before you press Run. Each Run opens the Today page in an empty web cache, so the phone cannot keep the previous screen.
 
-At the top of Xcode, choose your iPhone, then press Run. The Xcode console must contain `LumaCare build 5 starting` and `LumaCare build 5 web: new`. Today then shows a single mood row. If those lines are missing, delete LumaCare from the iPhone and press Run again. This build uses a new on-device address, so the previous install’s saved check-ins do not carry over.
+At the top of Xcode, choose your iPhone, then press Run. The Xcode console must contain `LumaCare build 6 starting` and `LumaCare build 6 web: new`. Today then shows a single mood row. If those lines are missing, delete LumaCare from the iPhone and press Run again. Check-ins are kept in the app’s own files. A home-screen icon added from Safari is a separate copy and stays on the previous page.
 
 ### What you can test before App Store Connect exists
 

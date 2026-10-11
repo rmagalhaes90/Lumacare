@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 import { App } from "./App.jsx";
 import { bootNative } from "./native.js";
+import { hydrateState } from "./lib/storage.js";
 import "./styles.css";
 
 const SHELL_REFRESH = "lumacare-shell-refresh";
@@ -36,6 +37,7 @@ async function start() {
     registerSW({ immediate: true });
   }
 
+  await hydrateState();
   bootNative();
   createRoot(document.getElementById("root")).render(<App />);
 }

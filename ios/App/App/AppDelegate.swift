@@ -7,7 +7,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        NSLog("LumaCare build 5 starting")
+        NSLog("LumaCare build 6 starting")
         clearSavedScreen()
         return true
     }

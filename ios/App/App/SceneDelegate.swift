@@ -7,7 +7,7 @@ class LumaBridgeViewController: CAPBridgeViewController {
     override func webView(with frame: CGRect, configuration: WKWebViewConfiguration) -> WKWebView {
         let source = """
         (function () {
-          var marker = "lumacare-build-5-purged";
+          var marker = "lumacare-build-6-purged";
           if (sessionStorage.getItem(marker)) return;
           sessionStorage.setItem(marker, "1");
           var jobs = [];
@@ -28,6 +28,7 @@ class LumaBridgeViewController: CAPBridgeViewController {
           });
         })();
         """
+        configuration.websiteDataStore = WKWebsiteDataStore.nonPersistent()
         configuration.userContentController.addUserScript(
             WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
         )
@@ -38,9 +39,9 @@ class LumaBridgeViewController: CAPBridgeViewController {
         let descriptor = super.instanceDescriptor()
         if let bundled = Bundle.main.resourceURL?.appendingPathComponent("public") {
             descriptor.appLocation = bundled
-            let freshStart = bundled.appendingPathComponent("index-build5.html")
+            let freshStart = bundled.appendingPathComponent("index-build6.html")
             if FileManager.default.fileExists(atPath: freshStart.path) {
-                descriptor.appStartPath = "index-build5.html"
+                descriptor.appStartPath = "index-build6.html"
             }
         }
         return descriptor
@@ -61,7 +62,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
 
         let revision = bundledWebRevision()
-        NSLog("LumaCare build 5 web: %@", revision)
+        NSLog("LumaCare build 6 web: %@", revision)
         if revision != "new" {
             showStaleWeb(revision)
             return
@@ -89,7 +90,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func bundledWebRevision() -> String {
         guard let root = Bundle.main.resourceURL?.appendingPathComponent("public") else { return "missing" }
-        let start = root.appendingPathComponent("index-build5.html")
+        let start = root.appendingPathComponent("index-build6.html")
         guard FileManager.default.fileExists(atPath: start.path) else { return "nostart" }
         guard let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: nil) else {
             return "unreadable"

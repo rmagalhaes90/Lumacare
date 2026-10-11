@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { normalizeCheckin, normalizeHabit } from "./habits.js";
 
 export const STORAGE_KEY = "lumacare-v1";
@@ -82,7 +83,26 @@ export function normalizeState(data) {
   };
 }
 
+const NATIVE_FILE = "lumacare-v1.json";
+let memory = null;
+
+export async function hydrateState() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const { Filesystem, Directory, Encoding } = await import("@capacitor/filesystem");
+    const file = await Filesystem.readFile({
+      path: NATIVE_FILE,
+      directory: Directory.Data,
+      encoding: Encoding.UTF8,
+    });
+    memory = normalizeState(JSON.parse(file.data));
+  } catch {
+    memory = emptyState();
+  }
+}
+
 export function loadState() {
+  if (memory) return memory;
   try {
     const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
     if (!raw) return emptyState();
@@ -93,6 +113,20 @@ export function loadState() {
 }
 
 export function saveState(state) {
+  memory = state;
+  if (Capacitor.isNativePlatform()) {
+    import("@capacitor/filesystem")
+      .then(({ Filesystem, Directory, Encoding }) =>
+        Filesystem.writeFile({
+          path: NATIVE_FILE,
+          data: JSON.stringify(state),
+          directory: Directory.Data,
+          encoding: Encoding.UTF8,
+        }),
+      )
+      .catch(() => {});
+    return;
+  }
   try {
     globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
